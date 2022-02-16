@@ -101,7 +101,7 @@ function CpHudInfoTexts:mouseEvent(posX, posY, isDown, isUp, button)
     end
 end
 
-function CpHudInfoTexts:moveToPosition(x, y)
+function CpHudInfoTexts:moveToPosition(element, x, y)
     CpHudInfoTexts.x = x 
     CpHudInfoTexts.y = y
 end
@@ -116,27 +116,45 @@ end
 function CpHudInfoTexts:update()
     self.activeTexts = 0 
     local infoTexts = g_infoTextManager:getActiveInfoTexts()
-    local elements, info, ix
+    local elements, info, ix, lastInfo
     for i = 1, #self.infoTextsElements do
         ix = i
         elements = self.infoTextsElements[i]
         info = infoTexts[ix]
+        --- Info text for this element was found.
         if info then 
-            elements.text:setVisible(true)
-            elements.vehicleBtn:setVisible(true)
-            local text = string.format("%s", info.text)
-            elements.text:setTextDetails(text)
-            elements.text:setCallback("onClickPrimary", info.vehicle, function (v)
-                self:debug("trying to enter vehicle: %s",v:getName())
-                self:enterVehicle(v) 
-                elements.text:setHovered(false)
-            end,elements.text)
-            elements.vehicleBtn:setCallback("onClickPrimary", info.vehicle, function (v)
-                self:debug("trying to enter vehicle: %s",v:getName())
-                self:enterVehicle(v) 
-                elements.text:setHovered(false)
-            end,elements.text)
-            
+            lastInfo = elements.lastInfo
+            --- Only update the hud button, when the info has changed.
+            if lastInfo == nil or info.vehicle ~= lastInfo.vehicle or info.text ~= lastInfo.text then 
+                --- Update the text button
+                elements.text:setVisible(true)
+                local text = string.format("%s", info.text)
+                elements.text:setTextDetails(text)
+                elements.text:setCallback("onClickPrimary", info.vehicle, function (v)
+                    self:debug("trying to enter vehicle: %s", v:getName())
+                    self:enterVehicle(v) 
+                    elements.text:setHovered(false)
+                end,elements.text)
+                elements.text:setCallback("onHoveredChanged", info.vehicle, function (v, element, hovered)
+                    if hovered then 
+                        element.lastText = element.text
+                        element:setTextDetails(CpUtil.getName(v))
+                    else 
+                        if element.lastText then
+                            element:setTextDetails(element.lastText)
+                        end
+                    end
+                end)
+                --- Update the vehicle button
+                elements.vehicleBtn:setVisible(true)
+                elements.vehicleBtn:setCallback("onClickPrimary", info.vehicle, function (v)
+                    self:debug("trying to enter vehicle: %s", v:getName())
+                    self:enterVehicle(v) 
+                    elements.text:setHovered(false)
+                end,elements.text)
+                elements.lastInfo = info
+            end
+            --- Makes sure the current entered vehicle is highlighted.
             if info.vehicle == g_currentMission.controlledVehicle then 
                 elements.vehicleBtn:setColor(unpack(self.SELECTED_COLOR))
             else 
@@ -144,15 +162,18 @@ function CpHudInfoTexts:update()
             end
             self.activeTexts = self.activeTexts + 1
         else 
+            --- Not enough active info text, so disable these buttons.
             elements.vehicleBtn:setVisible(false)
             elements.text:setVisible(false)
+            self.infoTextsElements[i].lastInfo = nil
         end
     end
+    --- Update the background height and shortens it, 
+    --- when the number of info texts is below the number of 
+    --- info texts, that can be shown simultaneously.
     if self.activeTexts > 0 then
-        local x, y = self.baseHud:getPosition()
+        local _, y = self.baseHud:getPosition()
         local _, dy = self.infoTextsElements[self.activeTexts].text:getPosition()
-        
-
         local width = self.baseHud:getWidth()
         self.baseHud:setDimension(width, y - dy + self.hMargin/2)
     end

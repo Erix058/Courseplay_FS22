@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-	All global info texts need to be placed here.
+	All info texts need to be placed here.
 	 
 	name: The name for the info text to call it in the lua scripts.
-	level: Is the priority of the info text, where -2 is the hightest priority.
 	text: The button text shown.
+
+	The priority is from top to bottom, which makes the first the highest priority in the hud.
 -->
 
 <InfoTexts prefix="cp_infoTexts_">

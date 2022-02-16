@@ -42,6 +42,7 @@ end
 function CpHudElement:setHovered(hovered)
     if hovered ~= self.hovered then 
         self:debug("hover state changed to %s",tostring(hovered))
+        self:raiseCallback("onHoveredChanged",{hovered})
     end
     self.hovered = hovered
 end
@@ -72,9 +73,9 @@ function CpHudElement:raiseCallback(callbackStr,args)
         local func = self.callbacks[callbackStr].func
         local class = self.callbacks[callbackStr].class
         if args~= nil then
-            func(class,unpack(args))
+            func(class, self, unpack(args))
         else 
-            func(class)
+            func(class, self)
         end
     end
 end

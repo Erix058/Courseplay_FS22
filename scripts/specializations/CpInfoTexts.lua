@@ -1,5 +1,5 @@
 
---- Handles the activation/deactivation of info texts for the vehicles.
+--- Handles the activation/deactivation of info texts for the vehicle.
 ---@class CpInfoTexts
 CpInfoTexts = {}
 
@@ -78,6 +78,8 @@ function CpInfoTexts:raiseDirtyFlag()
 	self:raiseDirtyFlags(spec.dirtyFlag)
 end
 
+--- Activates a given info text.
+---@param infoText CpInfoTextElement
 function CpInfoTexts:setCpInfoTextActive(infoText)
 	if infoText and infoText.id then 
 		local spec = self.spec_cpInfoTexts
@@ -88,6 +90,8 @@ function CpInfoTexts:setCpInfoTextActive(infoText)
 	end
 end
 
+--- Resets a given info text.
+---@param infoText CpInfoTextElement
 function CpInfoTexts:resetCpActiveInfoText(infoText)
 	if infoText and infoText.id then 
 		local spec = self.spec_cpInfoTexts
@@ -98,6 +102,7 @@ function CpInfoTexts:resetCpActiveInfoText(infoText)
 	end
 end
 
+--- Clears all active info texts.
 function CpInfoTexts:resetCpAllActiveInfoTexts()
 	local spec = self.spec_cpInfoTexts
 	spec.activeInfoTexts = {}
@@ -116,6 +121,7 @@ function CpInfoTexts:getIsCpInfoTextActive(infoText)
 	end
 end
 
+--- Every info text has a unique binary id, so it can be synchronized as a bit sequence.
 function CpInfoTexts:getBitMask()
 	local mask = 0
 	local spec = self.spec_cpInfoTexts
@@ -125,6 +131,7 @@ function CpInfoTexts:getBitMask()
 	return mask
 end
 
+--- Every info text has a unique binary id, so it can be synchronized as a bit sequence.
 function CpInfoTexts:setFromBitMask(bitMask)
 	local spec = self.spec_cpInfoTexts
 	local bits = MathUtil.numberToSetBits(bitMask)

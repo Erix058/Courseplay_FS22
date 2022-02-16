@@ -17,14 +17,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
 
-CpInfoText = CpObject()
-function CpInfoText:init(name,text,id)
+CpInfoTextElement = CpObject()
+function CpInfoTextElement:init(name,text,id)
 	self.name = name
 	self.text = text
 	self.id = id
 end
 
-function CpInfoText:__tostring()
+function CpInfoTextElement:__tostring()
 	return string.format("name: %s, text: %s",self.name,self.text)
 end
 
@@ -34,7 +34,6 @@ InfoTextManager = CpObject()
 
 InfoTextManager.xmlKey = "InfoTexts.InfoText"
 InfoTextManager.baseXmlKey = "InfoTexts"
-
 
 function InfoTextManager:init()
 	self:registerXmlSchema()
@@ -64,7 +63,7 @@ function InfoTextManager:loadFromXml()
 			text = xmlFile:getValue(key .. "#text")
 		--	text = g_i18n:getText(prefix..text)
 			id = bitShiftLeft(1, ix-1)-1
-			InfoTextManager[name] = CpInfoText(name, text, id)
+			InfoTextManager[name] = CpInfoTextElement(name, text, id)
 			self.infoTextsById[id] = InfoTextManager[name]
 			table.insert(self.infoTexts,InfoTextManager[name])
         end)
@@ -86,37 +85,47 @@ function InfoTextManager:getInfoTexts()
 	return self.infoTexts
 end
 
+--- Gets a info text by it's unique id.
 function InfoTextManager:getInfoTextById(id)
 	return self.infoTextsById[id]	
 end
 
+--- Gets all active info texts, for every vehicle combined.
 function InfoTextManager:getActiveInfoTexts()
 	local infos = {}
 	local i = self.numActiveTexts
+	local validInfoText
 	for _,infoText in ipairs(self.infoTexts) do 
 		for _,vehicle in pairs(self.vehicles) do 
-			if i <= 0 then 
-				break
+			
+			--- dev functionally for testing.
+			if self.numActiveTexts > 0 then 
+				validInfoText = true 
+				if i == 0 then 
+					break
+				end
+				i = i - 1 
+			else 
+				validInfoText = vehicle:getIsCpInfoTextActive(infoText)
 			end
-			i = i -1 
 		
-			--	if vehicle:getIsCpInfoTextActive(infoText) then 
+			if validInfoText then 
 				local info = {
 					text = infoText.text,
 					vehicle = vehicle
 				}
 				table.insert(infos,info)
-		--	end
-		
+			end	
 		end
 	end
 	return infos
 end
 
+--- Dev test function, to simulate the info texts.
 function InfoTextManager:changeNumActiveTexts()
 	InfoTextManager.numActiveTexts = InfoTextManager.numActiveTexts + 1
 	if InfoTextManager.numActiveTexts > 10 then 
-		InfoTextManager.numActiveTexts = 0
+		InfoTextManager.numActiveTexts = -1
 	end
 end
 
