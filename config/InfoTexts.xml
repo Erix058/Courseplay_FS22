@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+	All global info texts need to be placed here.
+	 
+	name: The name for the info text to call it in the lua scripts.
+	level: Is the priority of the info text, where -2 is the hightest priority.
+	text: The button text shown.
+-->
+
+<InfoTexts prefix="cp_infoTexts_">
+																	
+	<InfoText name="FUEL_EMPTY"  							text="fuel_empty"/>
+	<InfoText name="FUEL_ALMOST_EMPTY"  					text="fuel_almost_empty"/>
+
+	
+	<InfoText name="NEEDS_UNLOADING"  						text="needs_unloading"/>
+	<InfoText name="NEEDS_FILLING"  						text="needs_filling"/>
+
+	<InfoText name="IS_STUCK"								text="is_stuck"/>
+	<InfoText name="TRAFFIC"  								text="COURSEPLAY_IS_IN_TRAFFIC"/>
+	<InfoText name="SLOWING_DOWN_FOR_TRAFFIC"  				text="COURSEPLAY_SLOWING_DOWN_FOR_TRAFFIC"/>
+
+	<InfoText name="WORK_FINISHED"							text="work_finished"/>
+</InfoTexts>

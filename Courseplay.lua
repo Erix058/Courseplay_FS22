@@ -19,18 +19,20 @@ end
 
 function Courseplay:registerXmlSchema()
 	self.xmlSchema = XMLSchema.new("Courseplay")
-	self.xmlSchema:register(XMLValueType.STRING,self.baseXmlKey.."#lastVersion")
-	self.globalSettings:registerXmlSchema(self.xmlSchema,self.xmlKey)
-	CpBaseHud.registerXmlSchema(self.xmlSchema,self.xmlKey)
+	self.xmlSchema:register(XMLValueType.STRING, self.baseXmlKey.."#lastVersion")
+	self.globalSettings:registerXmlSchema(self.xmlSchema, self.xmlKey)
+	CpBaseHud.registerXmlSchema(self.xmlSchema, self.xmlKey)
+	CpHudInfoTexts.registerXmlSchema(self.xmlSchema, self.xmlKey)
 end
 
 --- Loads data not tied to a savegame.
 function Courseplay:loadUserSettings()
-	local xmlFile = XMLFile.loadIfExists("cpXmlFile",self.cpFilePath,self.xmlSchema)
+	local xmlFile = XMLFile.loadIfExists("cpXmlFile", self.cpFilePath, self.xmlSchema)
 	if xmlFile then
-		self:showUserInformation(xmlFile,self.baseXmlKey)
-		self.globalSettings:loadFromXMLFile(xmlFile,self.xmlKey)
-		CpBaseHud.loadFromXmlFile(xmlFile,self.xmlKey)
+		self:showUserInformation(xmlFile, self.baseXmlKey)
+		self.globalSettings:loadFromXMLFile(xmlFile, self.xmlKey)
+		CpBaseHud.loadFromXmlFile(xmlFile, self.xmlKey)
+		CpHudInfoTexts.loadFromXmlFile(xmlFile, self.xmlKey)
 		xmlFile:save()
 		xmlFile:delete()
 	end
@@ -38,12 +40,13 @@ end
 
 --- Saves data not tied to a savegame.
 function Courseplay:saveUserSettings()
-	local xmlFile = XMLFile.create("cpXmlFile",self.cpFilePath,self.baseXmlKey,self.xmlSchema)
+	local xmlFile = XMLFile.create("cpXmlFile", self.cpFilePath, self.baseXmlKey, self.xmlSchema)
 	if xmlFile then 
-		self.globalSettings:saveUserSettingsToXmlFile(xmlFile,self.xmlKey)
+		self.globalSettings:saveUserSettingsToXmlFile(xmlFile, self.xmlKey)
 		CpBaseHud.saveToXmlFile(xmlFile,self.xmlKey)
+		CpHudInfoTexts.saveToXmlFile(xmlFile, self.xmlKey)
 		if self.currentVersion then
-			xmlFile:setValue(self.baseXmlKey.."#lastVersion",self.currentVersion)
+			xmlFile:setValue(self.baseXmlKey.."#lastVersion", self.currentVersion)
 		end
 		xmlFile:save()
 		xmlFile:delete()
@@ -123,7 +126,8 @@ function Courseplay:setupGui()
 			{768, 0, 128, 128},4,function () return true end)
 	CpGuiUtil.fixInGameMenu(courseManagerFrame,"pageCpCourseManager",
 			{256,0,128,128},5, predicateFunc)
-	
+	self.infoTextsHud = CpHudInfoTexts()
+
 end
 
 --- Adds cp help info to the in game help menu.
@@ -156,6 +160,9 @@ end
 function Courseplay:draw()
 	g_devHelper:draw()
 	CpDebug:draw()
+	if not g_gui:getIsGuiVisible() then
+		self.infoTextsHud:draw()
+	end
 end
 
 ---@param posX number
@@ -170,6 +177,7 @@ function Courseplay:mouseEvent(posX, posY, isDown, isUp, button)
 		if hud then
 			hud:mouseEvent(posX, posY, isDown, isUp, button)
 		end
+		self.infoTextsHud:mouseEvent(posX, posY, isDown, isUp, button)
 	end
 end
 
@@ -378,7 +386,8 @@ function Courseplay.register(typeManager)
 		CpAIBaleFinder.register(typeManager,typeName,typeEntry.specializations)
 		CpVehicleSettingDisplay.register(typeManager,typeName,typeEntry.specializations)
 		CpHud.register(typeManager,typeName,typeEntry.specializations)
-    end
+		CpInfoTexts.register(typeManager,typeName,typeEntry.specializations)
+	end
 end
 TypeManager.finalizeTypes = Utils.prependedFunction(TypeManager.finalizeTypes, Courseplay.register)
 

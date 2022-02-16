@@ -238,8 +238,10 @@ function AIDriveStrategyCombineCourse:driveUnloadOnField()
 				self:debug('not full anymore, can continue working')
 				-- TODO_22 self:clearInfoText(self:getFillLevelInfoText())
 				self:changeToFieldWork()
+				self:clearInfoText(self:getFillLevelInfoText())
 			end
 		end
+		self:setInfoText(self:getFillLevelInfoText())
 		self:setMaxSpeed(0)
 	elseif self.unloadState == self.states.WAITING_FOR_UNLOAD_BEFORE_STARTING_NEXT_ROW then
 		self:setMaxSpeed(0)
@@ -1920,7 +1922,3 @@ function AIDriveStrategyCombineCourse:getWorkingToolPositionsSetting()
 	return setting:getHasMoveablePipe() and setting:hasValidToolPositions() and setting
 end
 
--- TODO_22
-function AIDriveStrategyCombineCourse:setInfoText(text)
-	self:debug(text)
-end

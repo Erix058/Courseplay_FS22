@@ -81,7 +81,8 @@ end
 
 -- TODO_22
 function AIDriveStrategyCourse:setInfoText(text)
-    self:debug(text)
+    self:debug("set info text: %s",tostring(text))
+    self.vehicle:setCpInfoTextActive(text)
 end
 
 function AIDriveStrategyCourse:setAIVehicle(vehicle, jobParameters)
@@ -232,14 +233,14 @@ end
 function AIDriveStrategyCourse:clearInfoText(msgReference)
     -- TODO_22
     if msgReference then
-        self:debug('clearInfoText: %s', msgReference)
+        self:debug('clearInfoText: %s', tostring(msgReference))
+        self.vehicle:resetCpActiveInfoText(msgReference)
     end
 end
 
 function AIDriveStrategyCourse:getFillLevelInfoText()
     -- TODO_22
-    self:debug('getFillLevelInfoText')
-    return 'getFillLevelInfoText'
+    return InfoTextManager.NEEDS_UNLOADING
 end
 
 -----------------------------------------------------------------------------------------------------------------------

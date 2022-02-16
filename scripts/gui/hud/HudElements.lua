@@ -275,6 +275,10 @@ function CpTextHudElement:draw()
 	setTextColor(1, 1, 1, 1)
 end
 
+function CpTextHudElement:getScreenHeight()
+    return self.screenTextSize   
+end
+
 --- Moveable Hud element.
 ---@class CpHudMoveableElement : CpHudElement
 CpHudMoveableElement = {
