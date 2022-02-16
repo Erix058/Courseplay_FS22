@@ -134,8 +134,12 @@ end
 --- Every info text has a unique binary id, so it can be synchronized as a bit sequence.
 function CpInfoTexts:setFromBitMask(bitMask)
 	local spec = self.spec_cpInfoTexts
-	local bits = MathUtil.numberToSetBits(bitMask)
-	for _,bit in pairs(bits) do 
-		spec.activeInfoTexts[bit] = g_infoTextManager:getInfoTextById(bit+1)
+	local bits = MathUtil.getBinary(bitMask)
+	local id
+	for ix, bit in ipairs(bits) do 
+		if bit then
+			id = bitShiftLeft(1, ix-1)
+			spec.activeInfoTexts[id] = g_infoTextManager:getInfoTextById(id)
+		end
 	end
 end

@@ -62,7 +62,7 @@ function InfoTextManager:loadFromXml()
             name = xmlFile:getValue(key .. "#name")
 			text = xmlFile:getValue(key .. "#text")
 		--	text = g_i18n:getText(prefix..text)
-			id = bitShiftLeft(1, ix-1)-1
+			id = bitShiftLeft(1, ix-1)
 			InfoTextManager[name] = CpInfoTextElement(name, text, id)
 			self.infoTextsById[id] = InfoTextManager[name]
 			table.insert(self.infoTexts,InfoTextManager[name])
