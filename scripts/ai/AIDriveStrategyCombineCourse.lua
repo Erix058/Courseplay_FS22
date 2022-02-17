@@ -76,6 +76,15 @@ function AIDriveStrategyCombineCourse.new(customMt)
 	self.chopperCanDischarge = CpTemporaryObject(false)
 	-- hold the harvester temporarily
 	self.temporaryHold = CpTemporaryObject(false)
+
+	--- Register info texts 
+	self:registerInfoTextForStates(self:getFillLevelInfoText(), {
+		self.states.WAITING_FOR_UNLOAD_ON_FIELD,
+		self.states.WAITING_FOR_UNLOAD_AFTER_FIELDWORK_ENDED,
+		self.states.WAITING_FOR_UNLOAD_AFTER_PULLED_BACK,
+		self.states.WAITING_FOR_UNLOAD_IN_POCKET
+	})
+
 	return self
 end
 
@@ -223,7 +232,6 @@ function AIDriveStrategyCombineCourse:driveUnloadOnField()
 			-- reset offset to return to the original up/down row after we unloaded in the pocket
 			self.aiOffsetX = 0
 
-			self:clearInfoText(self:getFillLevelInfoText())
 			-- wait a bit after the unload finished to give a chance to the unloader to move away
 			self.stateBeforeWaitingForUnloaderToLeave = self.unloadState
 			self.unloadState = self.states.WAITING_FOR_UNLOADER_TO_LEAVE
@@ -236,12 +244,9 @@ function AIDriveStrategyCombineCourse:driveUnloadOnField()
 		if g_updateLoopIndex % 5 == 0 then --small delay, to make sure no more fillLevel change is happening
 			if not self:isFull() and not self:shouldStopForUnloading() then
 				self:debug('not full anymore, can continue working')
-				-- TODO_22 self:clearInfoText(self:getFillLevelInfoText())
 				self:changeToFieldWork()
-				self:clearInfoText(self:getFillLevelInfoText())
 			end
 		end
-		self:setInfoText(self:getFillLevelInfoText())
 		self:setMaxSpeed(0)
 	elseif self.unloadState == self.states.WAITING_FOR_UNLOAD_BEFORE_STARTING_NEXT_ROW then
 		self:setMaxSpeed(0)
@@ -262,7 +267,6 @@ function AIDriveStrategyCombineCourse:driveUnloadOnField()
 		--- Makes sure the cotton harvester gets release at the end of the course.
 		--- TODO: Unload the unfinished bale from the cotton harvester.
 		if fillLevel < 0.01 or self:isCottonHarvester() then
-			self:clearInfoText(self:getFillLevelInfoText())
 			self:debug('Unloading finished after fieldwork ended, end course')
 			AIDriveStrategyCombineCourse.superClass().finishFieldWork(self)
 		else
@@ -381,7 +385,6 @@ function AIDriveStrategyCombineCourse:onWaypointPassed(ix, course)
 		self.unloadInPocketIx and ix == self.unloadInPocketIx then
 		-- we are making a pocket and reached the waypoint where we are going to stop and wait for unload
 		self:debug('Waiting for unload in the pocket')
-		self:setInfoText(self:getFillLevelInfoText())
 		self.unloadState = self.states.WAITING_FOR_UNLOAD_IN_POCKET
 	end
 
@@ -418,7 +421,6 @@ function AIDriveStrategyCombineCourse:onLastWaypointPassed()
 			-- pulled back, now wait for unload
 			self.unloadState = self.states.WAITING_FOR_UNLOAD_AFTER_PULLED_BACK
 			self:debug('Pulled back, now wait for unload')
-			self:setInfoText(self:getFillLevelInfoText())
 		elseif self.unloadState == self.states.DRIVING_TO_SELF_UNLOAD then
 			self:debug('Self unloading point reached, fill level %.1f, waiting for unload to start to start.', fillLevel)
 			self.unloadState = self.states.SELF_UNLOADING_WAITING_FOR_DISCHARGE
@@ -437,7 +439,6 @@ function AIDriveStrategyCombineCourse:onLastWaypointPassed()
 			self.ppc:setShortLookaheadDistance()
 			self:disableCollisionDetection()
 		else
-			self:setInfoText(self:getFillLevelInfoText())
 			-- let AutoDrive know we are done and can unload
 			self:debug('Fieldwork done, fill level is %.1f, now waiting to be unloaded.', fillLevel)
 			self.state = self.states.UNLOADING_ON_FIELD
@@ -1922,3 +1923,15 @@ function AIDriveStrategyCombineCourse:getWorkingToolPositionsSetting()
 	return setting:getHasMoveablePipe() and setting:hasValidToolPositions() and setting
 end
 
+------------------------------------------------------------------------------------------------------------------------
+--- Info texts, makes sure the unloadState also gets checked.
+---------------------------------------------------------------------------------------------------------------------------
+function AIDriveStrategyCombineCourse:updateInfoTexts()
+    for infoText, states in pairs(self.registeredInfoTexts) do 
+        if states[self.state] or states[self.unloadState] then 
+            self.vehicle:setCpInfoTextActive(infoText)
+        else 
+            self.vehicle:resetCpActiveInfoText(infoText)
+        end
+    end
+end
