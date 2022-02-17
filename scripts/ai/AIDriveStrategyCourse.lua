@@ -25,13 +25,13 @@ local AIDriveStrategyCourse_mt = Class(AIDriveStrategyCourse, AIDriveStrategy)
 
 AIDriveStrategyCourse.myStates = {
     INITIAL = {},
-    DRIVING_TO_COURSE_START = {}
+    DRIVING_TO_COURSE_START = {},
+    FINISHED_WAITING_FOR_RELEASE = {}
 }
 
 --- Implement controller events.
 AIDriveStrategyCourse.onRaisingEvent = "onRaising"
 AIDriveStrategyCourse.onLoweringEvent = "onLowering"
-AIDriveStrategyCourse.onFinishedEvent = "onFinished"
 AIDriveStrategyCourse.updateEvent = "update"
 
 function AIDriveStrategyCourse.new(customMt)
@@ -194,9 +194,21 @@ end
 function AIDriveStrategyCourse:update()
     self.ppc:update()
     self:updatePathfinding()
+    if self.state == self.states.FINISHED_WAITING_FOR_RELEASE then 
+        if g_Courseplay.globalSettings.driverReleaseHandling:getValue() == g_Courseplay.globalSettings.DRIVER_RELEASE_ENTERED then 
+            --- Releases the driver, if it is entered by a player.
+            if self.vehicle:getIsControlled() then 
+                self.vehicle:stopCurrentAIJob(AIMessageSuccessStoppedByUser)
+            end
+        end
+    end
 end
 
 function AIDriveStrategyCourse:getDriveData(dt, vX, vY, vZ)
+    --- Stays ideal, while waiting for release.
+    if self.state == self.states.FINISHED_WAITING_FOR_RELEASE then 
+        self:setMaxSpeed(0)
+    end
     local moveForwards = not self.ppc:isReversing()
     local gx, _, gz = self.ppc:getGoalPointPosition()
     return gx, gz, moveForwards, self.maxSpeed, 100
@@ -303,8 +315,7 @@ function AIDriveStrategyCourse:isCloseToCourseStart(distance)
     return self.course:getDistanceFromFirstWaypoint(self.ppc:getCurrentWaypointIx()) < distance
 end
 
---- Event raised when the drive is finished.
---- This gets called in the :stopCurrentAIJob(), as the giants code might stop the driver and not the active strategy.
+--- Sets the helper into an ideal state, util it gets released manually.
 function AIDriveStrategyCourse:onFinished()
-    self:raiseControllerEvent(self.onFinishedEvent)
+    self.state = self.states.FINISHED_WAITING_FOR_RELEASE
 end

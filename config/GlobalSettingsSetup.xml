@@ -30,9 +30,19 @@
 				<Text>always</Text>
 			</Texts>
 		</Setting>
-
+		<Setting classType="AIParameterSettingList" name="driverReleaseHandling">
+			<Values>
+				<Value name="DRIVER_RELEASE_AUTOMATIC">0</Value>
+				<Value name="DRIVER_RELEASE_MANUAL">1</Value>
+				<Value name="DRIVER_RELEASE_ENTERED">2</Value>
+			</Values>
+			<Texts>
+				<Text>automatic</Text>
+				<Text>manual</Text>
+				<Text>entered</Text>
+			</Texts>
+		</Setting>
 	</SettingSubTitle>
-	<!-- TODO: save the user settings in the game settings and not the save game dir.-->
 	<SettingSubTitle prefix="true" title="userSettings">
 		<Setting classType="AIParameterBooleanSetting" name="controllerHudSelected" defaultBool="false" onChangeCallback="onHudSelectionChanged" isUserSetting="true"/>
 		<Setting classType="AIParameterBooleanSetting" name="showsAllActiveCourses" isUserSetting="true"/>

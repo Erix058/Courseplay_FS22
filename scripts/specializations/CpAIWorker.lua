@@ -99,13 +99,31 @@ function CpAIWorker:onUpdateTick(dt, isActiveForInput, isActiveForInputIgnoreSel
 end
 
 
---- Post cp helper release handling.
---- Is used for the communication to external mods with events.
+--- Used to enable/disable release of the helper 
+--- and handles post release functionality with for example auto drive.
+--- TODO: This function is a mess and desperately needs better solution!
 function CpAIWorker:stopCurrentAIJob(superFunc,message,...)
+    if message then 
+        CpUtil.info(message:getMessage(), CpUtil.getName(self))
+    else
+        CpUtil.info("%s: no message was given.", CpUtil.getName(self))
+        return superFunc(self,message,...)
+    end
+    local hasFinished, releaseMessage
+    if message:isa(AIMessageErrorOutOfFill) then 
+        hasFinished = true
+        releaseMessage = g_infoTextManager.NEEDS_FILLING
+    elseif message:isa(AIMessageErrorIsFull) then 
+        hasFinished = true
+        releaseMessage = g_infoTextManager.NEEDS_UNLOADING
+    elseif message:isa(AIMessageSuccessFinishedJob) then 
+        hasFinished = true
+        releaseMessage = g_infoTextManager.WORK_FINISHED
+    end
+
     local wasCpActive = self:getIsCpActive()
-    local driveStrategy
     if wasCpActive then
-        driveStrategy = self:getCpDriveStrategy()
+        local driveStrategy = self:getCpDriveStrategy()
         if driveStrategy then 
             -- TODO: this isn't needed if we do not return a 0 < maxSpeed < 0.5, should either be exactly 0 or greater than 0.5
             local maxSpeed = driveStrategy and driveStrategy:getMaxSpeed()
@@ -118,15 +136,19 @@ function CpAIWorker:stopCurrentAIJob(superFunc,message,...)
                 CpUtil.debugVehicle(CpDebug.DBG_FIELDWORK, self, 'Overriding the Giants did not move timer.')
                 return
             end
-            --- This needs to be back propagated to the drive strategy, as the stop call might come for giants code or the user.
-            driveStrategy:onFinished()
+            if hasFinished and g_Courseplay.globalSettings.driverReleaseHandling:getValue() then 
+                --- This needs to be back propagated to the drive strategy, as the stop call might come for giants code or the user.
+                --- This is used to set the driver into an ideal state.
+                driveStrategy:onFinished()
+                self:setCpInfoTextActive(releaseMessage)
+                if self:getCpSettings().foldImplementAtEnd:getValue() then 
+                    self:prepareForAIDriving()
+                end
+                return
+            end
         end
     end
-    if message then 
-        CpUtil.info(message:getMessage(), CpUtil.getName(self))
-    else
-        CpUtil.info("%s: no message was given.", CpUtil.getName(self))
-    end
+    self:resetCpAllActiveInfoTexts()
     superFunc(self,message,...)
     if wasCpActive then 
         if message then

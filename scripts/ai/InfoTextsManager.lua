@@ -120,15 +120,13 @@ function InfoTextManager:getActiveInfoTexts()
 	end
 	return infos
 end
-
 --- Dev test function, to simulate the info texts.
+InfoTextManager.numActiveTexts = -1
 function InfoTextManager:changeNumActiveTexts()
 	InfoTextManager.numActiveTexts = InfoTextManager.numActiveTexts + 1
 	if InfoTextManager.numActiveTexts > 10 then 
 		InfoTextManager.numActiveTexts = -1
 	end
 end
-
-InfoTextManager.numActiveTexts = 10
 
 g_infoTextManager = InfoTextManager()
