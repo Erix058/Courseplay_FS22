@@ -61,7 +61,7 @@ function InfoTextManager:loadFromXml()
         xmlFile:iterate(self.xmlKey, function (ix, key)
             name = xmlFile:getValue(key .. "#name")
 			text = xmlFile:getValue(key .. "#text")
-		--	text = g_i18n:getText(prefix..text)
+			text = g_i18n:getText(prefix..text)
 			id = bitShiftLeft(1, ix-1)
 			InfoTextManager[name] = CpInfoTextElement(name, text, id)
 			self.infoTextsById[id] = InfoTextManager[name]

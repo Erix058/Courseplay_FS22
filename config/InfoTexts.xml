@@ -8,18 +8,12 @@
 	The priority is from top to bottom, which makes the first the highest priority in the hud.
 -->
 
-<InfoTexts prefix="cp_infoTexts_">
-																	
-	<InfoText name="FUEL_EMPTY"  							text="fuel_empty"/>
-	<InfoText name="FUEL_ALMOST_EMPTY"  					text="fuel_almost_empty"/>
+<InfoTexts prefix="CP_infoTexts_">
+	<InfoText name="IS_STUCK"								text="isStuck"/>
+	<InfoText name="TRAFFIC"  								text="isInTraffic"/>
+	<InfoText name="SLOWING_DOWN_FOR_TRAFFIC"  				text="slowingDownForTraffic"/>
 
-	
-	<InfoText name="NEEDS_UNLOADING"  						text="needs_unloading"/>
-	<InfoText name="NEEDS_FILLING"  						text="needs_filling"/>
-
-	<InfoText name="IS_STUCK"								text="is_stuck"/>
-	<InfoText name="TRAFFIC"  								text="COURSEPLAY_IS_IN_TRAFFIC"/>
-	<InfoText name="SLOWING_DOWN_FOR_TRAFFIC"  				text="COURSEPLAY_SLOWING_DOWN_FOR_TRAFFIC"/>
-
-	<InfoText name="WORK_FINISHED"							text="work_finished"/>
+	<InfoText name="NEEDS_FILLING"  						text="needsFilling"/>
+	<InfoText name="NEEDS_UNLOADING"  						text="needsUnloading"/>
+	<InfoText name="WORK_FINISHED"							text="workFinished"/>
 </InfoTexts>
