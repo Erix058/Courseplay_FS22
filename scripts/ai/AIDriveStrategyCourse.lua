@@ -208,7 +208,7 @@ end
 function AIDriveStrategyCourse:getDriveData(dt, vX, vY, vZ)
     --- Stays ideal, while waiting for release.
     if self.state == self.states.FINISHED_WAITING_FOR_RELEASE then 
-        self:setMaxSpeed(0)
+        self.maxSpeed = 0
     end
     local moveForwards = not self.ppc:isReversing()
     local gx, _, gz = self.ppc:getGoalPointPosition()
