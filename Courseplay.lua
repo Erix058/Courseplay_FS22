@@ -217,6 +217,64 @@ function Courseplay:load()
 	g_currentMission.aiMessageManager:registerMessage("ERROR_FULL", AIMessageErrorIsFull)
 end
 
+------------------------------------------------------------------------------------------------------------------------
+-- Player action events
+------------------------------------------------------------------------------------------------------------------------
+
+--- Adds player mouse action event, for global info texts.
+function Courseplay.addPlayerActionEvents(mission)
+	if mission.player then
+		print("Added player input events")
+		mission.player.inputInformation.registrationList[InputAction.CP_TOGGLE_MOUSE] = {
+			text = "",
+			triggerAlways = false,
+			triggerDown = false,
+			eventId = "",
+			textVisibility = true,
+			triggerUp = true,
+			callback = Courseplay.onOpenCloseMouseEvent,
+			activeType = Player.INPUT_ACTIVE_TYPE.STARTS_DISABLED
+		}
+		mission.player.updateActionEvents = Utils.appendedFunction(mission.player.updateActionEvents, Courseplay.updatePlayerActionEvents)
+		mission.player.removeActionEvents = Utils.prependedFunction(mission.player.removeActionEvents, Courseplay.removePlayerActionEvents)
+	end
+end
+FSBaseMission.onStartMission = Utils.appendedFunction(FSBaseMission.onStartMission , Courseplay.addPlayerActionEvents)
+
+--- Open/close mouse in player state.
+function Courseplay.onOpenCloseMouseEvent(player)
+	local showMouseCursor = not g_inputBinding:getShowMouseCursor()
+	g_inputBinding:setShowMouseCursor(showMouseCursor)
+	local leftRightRotationEventId = player.inputInformation.registrationList[InputAction.AXIS_LOOK_LEFTRIGHT_PLAYER].eventId
+	local upDownRotationEventId = player.inputInformation.registrationList[InputAction.AXIS_LOOK_UPDOWN_PLAYER].eventId
+	g_inputBinding:setActionEventActive(leftRightRotationEventId, not showMouseCursor)
+	g_inputBinding:setActionEventActive(upDownRotationEventId, not showMouseCursor)
+	player.wasCpMouseActive = not showMouseCursor
+end
+
+--- Enables/disables the player mouse action event, if there are any info texts.
+function Courseplay.updatePlayerActionEvents(player)
+	local eventId = player.inputInformation.registrationList[InputAction.CP_TOGGLE_MOUSE].eventId
+	g_inputBinding:setActionEventActive(eventId, false)
+	if not player:hasHandtoolEquipped() then
+		if g_Courseplay.infoTextsHud:isVisible() then 
+			g_inputBinding:setActionEventActive(eventId, true)
+		elseif player.wasCpMouseActive then 
+			Courseplay.onOpenCloseMouseEvent(player)
+		end
+	end
+end
+
+--- Resets the mouse cursor on entering a vehicle for example.
+function Courseplay.removePlayerActionEvents(player)
+	g_inputBinding:setShowMouseCursor(false)
+	player.wasCpMouseActive = nil
+end
+
+------------------------------------------------------------------------------------------------------------------------
+-- Commands
+------------------------------------------------------------------------------------------------------------------------
+
 function Courseplay:registerConsoleCommands()
 	addConsoleCommand( 'cpAddMoney', 'adds money', 'addMoney',self)
 	addConsoleCommand( 'cpRestartSaveGame', 'Load and start a savegame', 'restartSaveGame',self)
