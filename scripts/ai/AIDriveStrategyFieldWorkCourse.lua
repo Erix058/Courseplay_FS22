@@ -200,6 +200,12 @@ function AIDriveStrategyFieldWorkCourse:getDriveData(dt, vX, vY, vZ)
         self:keepConvoyTogether()
     end
     self:limitSpeed()
+
+    --- Stays ideal, while waiting for release.
+    if self.state == self.states.FINISHED_WAITING_FOR_RELEASE then 
+        self:setMaxSpeed(0)
+    end
+
     return gx, gz, moveForwards, self.maxSpeed, 100
 end
 
