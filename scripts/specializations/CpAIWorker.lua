@@ -109,17 +109,22 @@ function CpAIWorker:stopCurrentAIJob(superFunc,message,...)
         CpUtil.info("%s: no message was given.", CpUtil.getName(self))
         return superFunc(self,message,...)
     end
-    local hasFinished, releaseMessage
+    local hasFinished, releaseMessage, event
     if message:isa(AIMessageErrorOutOfFill) then 
         hasFinished = true
         releaseMessage = g_infoTextManager.NEEDS_FILLING
+        event = "onCpEmpty"
     elseif message:isa(AIMessageErrorIsFull) then 
         hasFinished = true
         releaseMessage = g_infoTextManager.NEEDS_UNLOADING
+        event = "onCpFull"
     elseif message:isa(AIMessageSuccessFinishedJob) then 
         hasFinished = true
         releaseMessage = g_infoTextManager.WORK_FINISHED
+        event = "onCpFinished"
     end
+    CpUtil.debugVehicle(CpDebug.DBG_FIELDWORK, self, "finished: %s, message: %s, event: %s", 
+                                                    tostring(hasFinished), tostring(releaseMessage), tostring(event))
 
     local wasCpActive = self:getIsCpActive()
     if wasCpActive then
@@ -136,11 +141,13 @@ function CpAIWorker:stopCurrentAIJob(superFunc,message,...)
                 CpUtil.debugVehicle(CpDebug.DBG_FIELDWORK, self, 'Overriding the Giants did not move timer.')
                 return
             end
-            if hasFinished and g_Courseplay.globalSettings.driverReleaseHandling:getValue() then 
+            --- TODO: This prevents cp - ad communication!
+            if hasFinished and g_Courseplay.globalSettings.driverReleaseHandling:getValue() ~= g_Courseplay.globalSettings.DRIVER_RELEASE_AUTOMATIC then 
                 --- This needs to be back propagated to the drive strategy, as the stop call might come for giants code or the user.
                 --- This is used to set the driver into an ideal state.
                 driveStrategy:onFinished()
                 self:setCpInfoTextActive(releaseMessage)
+                CpUtil.debugVehicle(CpDebug.DBG_FIELDWORK, self, 'Automatic release disabled.')
                 if self:getCpSettings().foldImplementAtEnd:getValue() then 
                     self:prepareForAIDriving()
                 end
@@ -151,23 +158,14 @@ function CpAIWorker:stopCurrentAIJob(superFunc,message,...)
     self:resetCpAllActiveInfoTexts()
     superFunc(self,message,...)
     if wasCpActive then 
-        if message then
-            local foldAtEndAllowed
-            if message:isa(AIMessageErrorOutOfFill) then 
-                SpecializationUtil.raiseEvent(self,"onCpEmpty")
-                foldAtEndAllowed = true
-            elseif message:isa(AIMessageErrorIsFull) then 
-                SpecializationUtil.raiseEvent(self,"onCpFull")
-                foldAtEndAllowed = true
-            elseif message:isa(AIMessageSuccessFinishedJob) then 
-                SpecializationUtil.raiseEvent(self,"onCpFinished")
-                foldAtEndAllowed = true
-            end
-            if foldAtEndAllowed and self:getCpSettings().foldImplementAtEnd:getValue() then
-                --- Folds implements at the end if the setting is active.
-                self:prepareForAIDriving()
-            end
+        if event then 
+            SpecializationUtil.raiseEvent(self, event)
         end
+        if hasFinished and self:getCpSettings().foldImplementAtEnd:getValue() then
+            --- Folds implements at the end if the setting is active.
+            self:prepareForAIDriving()
+        end
+    
     end
 end
 
