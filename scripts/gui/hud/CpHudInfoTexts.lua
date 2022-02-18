@@ -3,7 +3,7 @@
 CpHudInfoTexts = CpObject()
 CpHudInfoTexts.baseSize = {
 	x = 300,
-    y = 500
+    y = 300
 }
 CpHudInfoTexts.basePosition = {
 	x = 1920 - 250,
